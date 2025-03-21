@@ -45,3 +45,5 @@ create table game_results (
     end_at datetime not null,
     foreign key (game_id) references games(id)
 );
+
+select 'ok' as result;
