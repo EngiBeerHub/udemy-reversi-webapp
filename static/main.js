@@ -38,7 +38,17 @@ async function showBoard() {
   });
 }
 
+/**
+ * 対戦を開始する
+ */
+async function registerGame() {
+  await fetch("/api/games", {
+    method: "POST",
+  });
+}
+
 async function main() {
+  await registerGame();
   await showBoard();
 }
 
