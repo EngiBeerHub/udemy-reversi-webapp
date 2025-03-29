@@ -1,13 +1,7 @@
 import express from "express";
-import morgan from "morgan";
 import "express-async-errors";
-import mysql from "mysql2/promise";
-import { GameGateway } from "./dataaccess/gameGateway";
-import { TrunGateway } from "./dataaccess/turnGateway";
-import { MoveGateway } from "./dataaccess/moveGateway";
-import { SquareGateway } from "./dataaccess/squareGateway";
+import morgan from "morgan";
 import { gameRouter } from "./presentation/gameRouter";
-import { connectMySQL } from "./dataaccess/connection";
 import { turnRouter } from "./presentation/turnRouter";
 
 const PORT = 3000;

@@ -1,8 +1,8 @@
 import mysql from "mysql2/promise";
 import { Turn } from "./turn";
-import { TrunGateway } from "../../dataaccess/turnGateway";
-import { SquareGateway } from "../../dataaccess/squareGateway";
-import { MoveGateway } from "../../dataaccess/moveGateway";
+import { TrunGateway } from "../../infrastructure/turnGateway";
+import { SquareGateway } from "../../infrastructure/squareGateway";
+import { MoveGateway } from "../../infrastructure/moveGateway";
 import { Move } from "./move";
 import { toDisc } from "./disc";
 import { Point } from "./point";
