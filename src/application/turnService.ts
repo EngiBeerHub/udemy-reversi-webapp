@@ -1,19 +1,14 @@
 import { connectMySQL } from "../dataaccess/connection";
 import { GameGateway } from "../dataaccess/gameGateway";
-import { MoveGateway } from "../dataaccess/moveGateway";
-import { SquareGateway } from "../dataaccess/squareGateway";
-import { TrunGateway } from "../dataaccess/turnGateway";
-import { Board } from "../domain/board";
 import { toDisc } from "../domain/disc";
 import { Point } from "../domain/point";
-import { Turn } from "../domain/turn";
-import { DARK, LIGHT } from "./constants";
+import { TurnRepository } from "../domain/turnRepository";
 
 // Table Data Gatewayの宣言
 const gameGateway = new GameGateway();
-const turnGateway = new TrunGateway();
-const moveGateway = new MoveGateway();
-const squareGateway = new SquareGateway();
+
+// Repository
+const turnRepository = new TurnRepository();
 
 class FindLatestGameTurnByTurnCountOutput {
   constructor(
@@ -47,28 +42,16 @@ export class TurnService {
         throw new Error("Latest game not found");
       }
 
-      const turnRecord = await turnGateway.findForGameIdAndTurnCount(
+      const turn = await turnRepository.findForGameIdAndTurnCount(
         conn,
         gameRecord.id,
         turnCount
       );
-      if (!turnRecord) {
-        throw new Error("Specified turn not found");
-      }
-
-      const squareRecords = await squareGateway.findForTurnId(
-        conn,
-        turnRecord.id
-      );
-      const board = Array.from(Array(8)).map(() => Array.from(Array(8)));
-      squareRecords.forEach((s) => {
-        board[s.y][s.x] = s.disc;
-      });
 
       return new FindLatestGameTurnByTurnCountOutput(
         turnCount,
-        board,
-        turnRecord.nextDisc,
+        turn.board.discs,
+        turn.nextDisc,
         // TODO: 決着がついている場合、game_resultsテーブルから結果を取得する
         undefined
       );
@@ -87,49 +70,17 @@ export class TurnService {
       }
 
       const previousTurnCount = turnCount - 1;
-      const previousTurnRecord = await turnGateway.findForGameIdAndTurnCount(
+      const previousTurn = await turnRepository.findForGameIdAndTurnCount(
         conn,
         gameRecord.id,
         previousTurnCount
-      );
-      if (!previousTurnRecord) {
-        throw new Error("Specified turn not found");
-      }
-
-      const squareRecords = await squareGateway.findForTurnId(
-        conn,
-        previousTurnRecord.id
-      );
-
-      const board = Array.from(Array(8)).map(() => Array.from(Array(8)));
-      squareRecords.forEach((s) => {
-        board[s.y][s.x] = s.disc;
-      });
-
-      const previousTurn = new Turn(
-        gameRecord.id,
-        previousTurnCount,
-        toDisc(previousTurnRecord.nextDisc),
-        undefined,
-        new Board(board),
-        previousTurnRecord.endAt
       );
 
       // 石を置く
       const newTurn = previousTurn.placeNext(toDisc(disc), new Point(x, y));
 
       // ターンを保存する
-      const turnRecord = await turnGateway.insert(
-        conn,
-        newTurn.gameId,
-        newTurn.turnCount,
-        newTurn.nextDisc,
-        newTurn.endAt
-      );
-
-      await squareGateway.insertAll(conn, turnRecord.id, newTurn.board.discs);
-
-      await moveGateway.insert(conn, turnRecord.id, disc, x, y);
+      await turnRepository.save(conn, newTurn);
 
       await conn.commit();
     } finally {
