@@ -1,11 +1,10 @@
 import { connectMySQL } from "../dataaccess/connection";
-import { GameGateway } from "../dataaccess/gameGateway";
-import { firstTurn } from "../domain/turn";
-import { TurnRepository } from "../domain/turnRepository";
+import { Game } from "../domain/game/game";
+import { GameRepository } from "../domain/game/gameRepository";
+import { firstTurn } from "../domain/turn/turn";
+import { TurnRepository } from "../domain/turn/turnRepository";
 
-// Table Data Gatewayの宣言
-const gameGateway = new GameGateway();
-
+const gameRepository = new GameRepository();
 const turnRepository = new TurnRepository();
 
 export class GameService {
@@ -16,9 +15,12 @@ export class GameService {
     try {
       await conn.beginTransaction();
 
-      const gameRecord = await gameGateway.insert(conn, now);
+      const game = await gameRepository.save(conn, new Game(undefined, now));
+      if (!game.id) {
+        throw new Error("game.id not exist");
+      }
 
-      const turn = firstTurn(gameRecord.id, now);
+      const turn = firstTurn(game.id, now);
 
       await turnRepository.save(conn, turn);
 
