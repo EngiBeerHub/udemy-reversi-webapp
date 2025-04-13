@@ -1,5 +1,5 @@
 import express from "express";
-import { GameService } from "../application/gameService";
+import {GameService} from "../application/service/gameService";
 
 export const gameRouter = express.Router();
 
@@ -9,6 +9,6 @@ const gameService = new GameService();
  * 対戦を開始するAPI
  */
 gameRouter.post("/api/games", async (req, res) => {
-  await gameService.startNewGame();
-  res.status(201).end();
+    await gameService.startNewGame();
+    res.status(201).end();
 });
