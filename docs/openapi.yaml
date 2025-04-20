@@ -35,6 +35,9 @@ paths:
                         startedAt:
                           type: string
                           example: 2017-07-21T17:32:28Z
+                        endAt:
+                          type: string
+                          example: 2017-07-21T17:32:28Z
 
     post:
       responses:
